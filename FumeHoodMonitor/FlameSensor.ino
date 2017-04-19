@@ -1,9 +1,17 @@
 #define flameSensorPin 6 // Digital pin to read the flame sensor
 
 String getFlameStatus(){
-  short flameValue = digitalRead(flameSensorPin);
-  String flameMeaning;
-  if (flameValue == 0) flameMeaning = String("On Fire");
-  else flameMeaning = String("All Clear");
-  return flameMeaning;
+  short flameValue = readFlameSensor();
+  String flameStatus;
+  if (flameValue == 0) flameStatus = String("Flame Detected");
+  else flameStatus = String("All Clear");
+  return flameStatus;
+}
+
+bool isFlamePresent(){
+  return readFlameSensor() == 0;
+}
+
+short readFlameSensor(){
+  return digitalRead(flameSensorPin);
 }

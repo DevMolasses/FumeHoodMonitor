@@ -5,8 +5,8 @@
 
 // Used to keep track of ThingSpeak posting intervals
 // This should probably change to use the RTC
-unsigned long timer;
-const unsigned long thingSpeakPostingInterval = 15000; // milliseconds between ThingSpeak posts
+DateTime timer;
+const unsigned long thingSpeakPostingInterval = 30; // seconds between ThingSpeak posts
 
 void setup() {
   // Open serial communications and wait for port to open:
@@ -33,18 +33,26 @@ void setup() {
   setThingSpeakStatus(statusMsg);
   postToThingSpeak();
 
-  timer = millis();
+  timer = getRTCCurrentTime();
 }
 
 void loop() {
+  // Collect the data from the sensors
   String flameStatus = getFlameStatus();
+  bool flamePresent = isFlamePresent();
+  
   float temp = readTemp();
   float rtdTemp = readRTDTemp();
   float TMP36 = readTMP36Temp();
-  // displayTemp(temp);
+
+  // Set the display
+  displayTemp(temp);
   displayCount(TMP36);
-  unsigned long now = millis();
-  if (now - timer > 30000) {
+
+  // Log data to ThingSpeak
+  DateTime now = getRTCCurrentTime();
+  unsigned long timeSpan = now.unixtime() - timer.unixtime();
+  if (timeSpan >= thingSpeakPostingInterval) {
     setThingSpeakField(1,temp);
     setThingSpeakField(2,rtdTemp);
     setThingSpeakField(3,flameStatus);

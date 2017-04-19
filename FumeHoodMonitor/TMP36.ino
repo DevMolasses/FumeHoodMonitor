@@ -1,5 +1,6 @@
 #define TMP36Pin A1 // Analog pin to read the TMP36 ambient temperature sensor
 const int numReadings = 10;
+const float maxTMP36Temperature = 200.0; //Deg F
 int readings[numReadings];
 int readIndex = 0;
 int total = 0;
@@ -25,4 +26,12 @@ void initializeTMP36(){
     readings[thisReading] = analogRead(TMP36Pin);
     total += readings[thisReading];
   }
+}
+
+bool isTempHigh(){
+  return readTMP36Temp() > maxTMP36Temperature;
+}
+
+bool isTempHigh(float tempF){
+  return tempF > maxTMP36Temperature;
 }

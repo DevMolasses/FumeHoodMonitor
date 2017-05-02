@@ -3,8 +3,8 @@ const int numRTDReadings = 10;
 const float maxRTDTemperature = 350.0; //Deg F
 float RTDreadings[numRTDReadings];
 int RTDreadIndex = 0;
-int RTDtotal = 0;
-int RTDaverage = 0;
+float RTDtotal = 0;
+float RTDaverage = 0;
 
 // Use software SPI: CS, DI, DO, CLK
 Adafruit_MAX31865 rtd = Adafruit_MAX31865(10, 11, 12, 13);
@@ -20,14 +20,10 @@ void initializeRTD(){
     RTDreadings[thisReading] = rtd.temperature(100, RREF);
     RTDtotal += RTDreadings[thisReading];
   }
-
+  Serial.println("RTD Started");
 }
 
 float readRTDTemp(){
-  // float c = rtd.temperature(100, RREF);
-  // float f = c * 9.0 / 5.0 + 32;
-  // return f;
-
   RTDtotal -= RTDreadings[RTDreadIndex];
   RTDreadings[RTDreadIndex] = rtd.temperature(100, RREF);
   RTDtotal += RTDreadings[RTDreadIndex];

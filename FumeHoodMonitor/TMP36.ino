@@ -8,18 +8,38 @@ int average = 0;
 
 // Gets a reading from the TMP36 sensor and stores it in the array for averaging
 float readTMP36Temp(){
+  updateReadings();
+  float voltage = readTMP36Voltage(false);
+  float tempC = (voltage - 0.5) * 100;
+  float tempF = (tempC * 9.0 / 5.0) + 32.0;
+  return tempF;
+}
+
+float readTMP36Voltage() {
+  updateReadings();
+  float voltage = average * 3.3 / 1024;
+  return voltage;
+}
+
+float readTMP36Voltage(bool updateReadingsArray) {
+  if (updateReadingsArray) updateReadings();
+  float voltage = average * 3.3 / 1024;
+  return voltage;
+}
+
+float getReadingAverage(){
+  updateReadings();
+  return average;
+}
+
+void updateReadings(){
   total -= readings[readIndex];
   readings[readIndex] = analogRead(TMP36Pin);
   total += readings[readIndex];
   readIndex++;
   if (readIndex >= numReadings)readIndex = 0;
   average = total / numReadings;
-  float voltage = average * 3.3 / 1024;
-  float tempC = (voltage - 0.5) * 100;
-  float tempF = (tempC * 9.0 / 5.0) + 32.0;
-  return tempF;
 }
-
 //Initializes the TMP36 sesor array by filling it with temperature readings
 void initializeTMP36(){
   for (int thisReading = 0; thisReading < numReadings; thisReading++){

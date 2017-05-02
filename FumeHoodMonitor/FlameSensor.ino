@@ -3,7 +3,9 @@
 String getFlameStatus(){
   short flameValue = readFlameSensor();
   String flameStatus;
-  if (flameValue == 0) flameStatus = String("Flame Detected");
+  if (flameValue == 0) {
+    flameStatus = String("On Fire");
+  }
   else flameStatus = String("All Clear");
   return flameStatus;
 }

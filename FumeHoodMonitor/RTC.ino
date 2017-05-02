@@ -1,4 +1,3 @@
-
 #include <NTPClient.h> // Library to access time from the NTP servers
 
 NTPClient timeClient(Udp);
@@ -22,6 +21,7 @@ void updateRTCToNTPTime() {
 
 String getRTCCurrentTimeString(){
   DateTime currentTime = rtc.now();
+
   String currentTimeString = "";
   currentTimeString += currentTime.year();
   currentTimeString += "/";

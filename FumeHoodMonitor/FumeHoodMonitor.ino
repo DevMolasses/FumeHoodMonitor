@@ -5,7 +5,7 @@
 
 // Used to keep track of ThingSpeak posting intervals
 // This should probably change to use the RTC
-DateTime timer;
+DateTime ThingSpeakTimer;
 const unsigned long thingSpeakPostingInterval = 30; // seconds between ThingSpeak posts
 
 void setup() {
@@ -32,7 +32,8 @@ void setup() {
   updateRTCToNTPTime();
   writeLCD("Starting TMP36...");
   initializeTMP36();
-
+  writeLCD("Starting WatchDog...");
+  initializeWatchDog();
 
   String statusMsg = "Monitor Rebooted at ";
   writeLCD(statusMsg, getRTCCurrentTimeString());
@@ -43,20 +44,17 @@ void setup() {
   setThingSpeakStatus(statusMsg);
   postToThingSpeak();
 
-  timer = getRTCCurrentTime();
+  ThingSpeakTimer = getRTCCurrentTime();
 }
 
 void loop() {
-  // Collect the data from the sensors
+  // Collect the data from the sensors and display on LCD
   String flameStatus = getFlameStatus();
-  // bool flamePresent = isFlamePresent();
-
-  // float temp = readTemp();
   float rtdTemp = readRTDTemp();
   float TMP36 = readTMP36Temp();
-  // float TMP36 = readTMP36Voltage();
-  // float TMP36 = getReadingAverage();
   writeLCD(getRTCCurrentTimeString(), TMP36, rtdTemp, flameStatus);
+
+  petWatchDog();
 
   // // Set the display
   // // displayTemp(temp);
@@ -64,13 +62,13 @@ void loop() {
   //
   // // Log data to ThingSpeak
   // DateTime now = getRTCCurrentTime();
-  // unsigned long timeSpan = now.unixtime() - timer.unixtime();
+  // unsigned long timeSpan = now.unixtime() - ThingSpeakTimer.unixtime();
   // if (timeSpan >= thingSpeakPostingInterval) {
   //   setThingSpeakField(1,temp);
   //   setThingSpeakField(2,rtdTemp);
   //   setThingSpeakField(3,flameStatus);
   //   setThingSpeakStatus(flameStatus);
   //   postToThingSpeak();
-  //   timer = now;
+  //   ThingSpeakTimer = now;
   // }
 }

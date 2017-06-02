@@ -1,6 +1,6 @@
 // This is a watchdog program to be run on an Adafruit Trinket
 
-#define watchDogPin 13
+#define watchDogPin 1
 #define resetPin 2
 
 unsigned long watchDogInterval = 30000; // Needs to see a pulse at lease every 30 seconds
@@ -12,7 +12,6 @@ bool watchDogIsBeingPet = false;
 bool watchDogHasBeenPet = false;
 
 void setup() {
-  Serial.begin(9600);
   pinMode(watchDogPin, INPUT);
   pinMode(resetPin, OUTPUT);
   digitalWrite(resetPin, HIGH);
@@ -29,7 +28,6 @@ void loop(){
     watchDogHasBeenPet = false;
   } 
   unsigned long now = millis();
-  Serial.println(now - watchDogTimer);
   if(now - watchDogTimer >= watchDogInterval){
     digitalWrite(resetPin, LOW);
     delay(resetDuration);

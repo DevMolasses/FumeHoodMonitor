@@ -7,12 +7,14 @@ EthernetUDP Udp;
 byte mac[] = MAC;
 
 void initializeEthernetPort() {
+  writeLCD("Starting Ethernet...");
   Ethernet.init(WIZ_CS); // Initialize the ethernet port
   delay(1000); // give the ethernet module time to boot up
 
   // start the Ethernet connection:
   if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
+    writeLCD("Ethernet failed");
     // no point in carrying on, so do nothing forevermore:
     while(1);
   }

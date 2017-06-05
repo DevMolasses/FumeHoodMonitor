@@ -13,6 +13,7 @@ Adafruit_MAX31865 rtd = Adafruit_MAX31865(10, 11, 12, 13);
 #define RREF 430.0
 
 void initializeRTD(){
+  writeLCD("Starting RTD...");
   Serial.println("Starting the RTD");
   rtd.begin(MAX31865_3WIRE); // Start the RTD amplifier
 
@@ -35,10 +36,10 @@ float readRTDTemp(){
   return tempF;
 }
 
-bool isRTDTempHigh() {
+bool isFluidTempHigh() {
   return readRTDTemp() > maxRTDTemperature;
 }
 
-bool isRTDTempHigh(float tempF){
+bool isFluidTempHigh(float tempF){
   return tempF > maxRTDTemperature;
 }

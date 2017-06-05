@@ -1,6 +1,6 @@
 DateTime watchDogTimer;
-const unsigned short watchDogPetDuration = 3; // length of watch dog pets in seconds; MUST BE LESS THAN INTERVAL
-const unsigned short watchDogPetInterval = 6 - watchDogPetDuration; // seconds between of watch dog pets
+const unsigned short watchDogPetDuration = 2; // length of watch dog pets in seconds; MUST BE LESS THAN INTERVAL
+const unsigned short watchDogPetInterval = 4 - watchDogPetDuration; // seconds between of watch dog pets
 
 #define watchDogPin 1
 

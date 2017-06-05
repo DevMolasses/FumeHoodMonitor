@@ -1,4 +1,4 @@
-#define flameSensorPin 6 // Digital pin to read the flame sensor
+#define flameSensorPin A2 // Digital pin to read the flame sensor
 
 String getFlameStatus(){
   short flameValue = readFlameSensor();

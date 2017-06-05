@@ -25,16 +25,17 @@ void updateReadings(){
 }
 //Initializes the TMP36 sesor array by filling it with temperature readings
 void initializeTMP36(){
+  writeLCD("Starting TMP36...");
   for (int thisReading = 0; thisReading < numReadings; thisReading++){
     readings[thisReading] = analogRead(TMP36Pin);
     total += readings[thisReading];
   }
 }
 
-bool isTempHigh(){
+bool isAirTempHigh(){
   return readTMP36Temp() > maxTMP36Temperature;
 }
 
-bool isTempHigh(float tempF){
+bool isAirTempHigh(float tempF){
   return tempF > maxTMP36Temperature;
 }

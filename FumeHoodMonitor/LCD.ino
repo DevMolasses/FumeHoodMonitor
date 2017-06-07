@@ -3,13 +3,16 @@
 #define REDLITE 5
 #define GREENLITE 6
 #define BLUELITE A3
-
+bool backlightBlinkState = true;
+int backLightBlinkCycleCountLimit = 1;
+int backlightBlinkCycleCount = 0;
 Adafruit_LiquidCrystal lcd(0);
 int brightness = 255;
 
 void initializeLCD(){
   lcd.begin(20,4);
   writeLCD("Starting LCD...");
+  Serial.println("Starting LCD");
   pinMode(REDLITE, OUTPUT);
   pinMode(GREENLITE, OUTPUT);
   pinMode(BLUELITE, OUTPUT);
@@ -49,6 +52,18 @@ void writeLCD(String timeString, float ambientTemp, float fluidTemp, String flam
   lcd.print(make20Characters("Fluid Temp: " + String(fluidTemp, 2) + String((char)223) + "F"));
   lcd.setCursor(0,3);
   lcd.print(make20Characters("Flame: " + flameStatus));
+}
+
+void setLCDTemperatureColor() {
+  if (onFire) {
+    if (backlightBlinkState) setBacklight("red");
+    else setBacklight(0, 0, 0);
+    if (backlightBlinkCycleCount >= backLightBlinkCycleCountLimit){
+      backlightBlinkState = !backlightBlinkState;
+      backlightBlinkCycleCount = 0;
+    } else backlightBlinkCycleCount++;
+  } else if (airHigh || oilHigh) setBacklight("red");
+  else setBacklight("green");
 }
 
 String make20Characters(String str){

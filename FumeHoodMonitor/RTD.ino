@@ -1,6 +1,8 @@
 #include <Adafruit_MAX31865.h> // Adafruit library for using the MAX31865 (RTD Amp)
 const int numRTDReadings = 10;
-const float maxRTDTemperature = 350.0; //Deg F
+static const float oilTempLow = 75.0; //Deg F
+static const float oilTempHigh = 80.0; //Deg F
+static const float oilTempOnFire = 85.0; //Deg F
 float RTDreadings[numRTDReadings];
 int RTDreadIndex = 0;
 float RTDtotal = 0;
@@ -36,10 +38,14 @@ float readRTDTemp(){
   return tempF;
 }
 
-bool isFluidTempHigh() {
-  return readRTDTemp() > maxRTDTemperature;
+bool isOilTempLow(float tempF) {
+  return tempF <= oilTempLow;
 }
 
-bool isFluidTempHigh(float tempF){
-  return tempF > maxRTDTemperature;
+bool isOilTempHigh(float tempF){
+  return tempF >= oilTempHigh;
+}
+
+bool isOilTempOnFire(float tempF){
+  return tempF >= oilTempOnFire;
 }

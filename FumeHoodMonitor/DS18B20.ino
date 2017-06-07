@@ -7,7 +7,9 @@ OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
 const int numDS18B20Readings = 5;
-const float maxDS18B20Temperature = 200.0; //Deg F
+static const float airTempLow = 75.0; //Deg F
+static const float airTempHigh = 80.0; //Deg F
+static const float airTempOnFire = 85.0; //Deg F
 float DS18B20readings[numDS18B20Readings];
 int DS18B20readIndex = 0;
 float DS18B20total = 0;
@@ -37,4 +39,16 @@ void updateDS18B20Readings(){
   DS18B20readIndex++;
   if (DS18B20readIndex >= numDS18B20Readings)DS18B20readIndex = 0;
   DS18B20average = DS18B20total / numDS18B20Readings;
+}
+
+bool isAirTempLow(float tempF){
+  return tempF <= airTempLow;
+}
+
+bool isAirTempHigh(float tempF) {
+  return tempF >= airTempHigh;
+}
+
+bool isAirTempOnFire(float tempF){
+  return tempF >= airTempOnFire;
 }

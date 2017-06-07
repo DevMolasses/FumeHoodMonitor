@@ -1,48 +1,54 @@
 // This is a watchdog program to be run on an Adafruit Trinket
 
-#define watchDogPin 2
-#define resetPin 3
-#define hbPin 1
+#define watchDogPin 1
+#define resetPin 2
+#define resetButtonPin 4
 
-unsigned long watchDogInterval = 30000; // Needs to see a pulse at lease every 30 seconds
-unsigned long resetDuration = 5000;
-unsigned long fumeHoodMonitorBootTime = 15000;
-volatile unsigned long watchDogTimer;
-volatile bool hbState = false;
-// bool watchDogIsBeingPet = false;
-// bool watchDogHasBeenPet = false;
+static const int resetHoldTime = 5000; //ms
+static const int fumeHoodMonitorBootTime = 20000; //ms
+static const int noChangeCountResetTrigger = 300; // equals 30 seconds with a system check every 100 ms
+static const int resetButtonCountResetTrigger = 20; // equals 2 seconds with a system check every 100 ms
+static const int systemCheckInterval = 100; // ms between system checks
+int noChangeCount = 0;
+int resetButtonCount = 0;
+int watchDogInputState = 0;
+int lastWatchDogInputState = 0;
 
 void setup() {
   pinMode(watchDogPin, INPUT);
-  attachInterrupt(0, petWatchDog, RISING);
   pinMode(resetPin, OUTPUT);
-  pinMode(hbPin, OUTPUT);
+  pinMode(resetButtonPin, INPUT);
   digitalWrite(resetPin, HIGH);
-  digitalWrite(hbPin, hbState);
   delay(fumeHoodMonitorBootTime);
-  watchDogTimer = millis();
 }
 
 void loop(){
-  // watchDogIsBeingPet = digitalRead(watchDogPin) == 1;
-  // if (watchDogIsBeingPet) {
-  //   watchDogHasBeenPet = true;
-  // } else if (!watchDogIsBeingPet && watchDogHasBeenPet) {
-  //   watchDogTimer = millis();
-  //   watchDogHasBeenPet = false;
-  // }
-  unsigned long now = millis();
-  if(now - watchDogTimer >= watchDogInterval){
-    digitalWrite(resetPin, LOW);
-    delay(resetDuration);
-    digitalWrite(resetPin, HIGH);
-    delay(fumeHoodMonitorBootTime);
-    watchDogTimer = millis();
-  }
-  digitalWrite(hbPin, hbState);
+  checkSystem(); // continuously monitors input pulse and will only break if the pulse stops
+  resetSystem(); // will only execute if the watchdog is not changing state
 }
 
-void petWatchDog(){
-  watchDogTimer = millis();
-  hbState = !hbState;
+void checkSystem(){
+  do {
+    // Monitor watchDog pulses
+    watchDogInputState = digitalRead(watchDogPin);
+    if (watchDogInputState == lastWatchDogInputState) noChangeCount++;
+      else noChangeCount = 0;
+    lastWatchDogInputState = watchDogInputState;
+
+    // Monitor Reset Button
+    if (digitalRead(resetButtonPin) == HIGH) resetButtonCount++;
+      else resetButtonCount = 0;
+
+    delay(systemCheckInterval);
+//  } while(true);
+   } while(noChangeCount < noChangeCountResetTrigger && resetButtonCount < resetButtonCountResetTrigger);
+}
+
+void resetSystem() {
+  digitalWrite(resetPin, LOW);
+  delay(resetHoldTime);
+  digitalWrite(resetPin, HIGH);
+  delay(fumeHoodMonitorBootTime);
+  noChangeCount = 0;
+  resetButtonCount = 0;
 }

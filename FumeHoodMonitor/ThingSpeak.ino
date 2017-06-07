@@ -8,7 +8,7 @@ DateTime ThingSpeakTimer;
 const unsigned long thingSpeakPostingInterval = 30; // seconds between ThingSpeak posts
 
 void initializeThingSpeak() {
-  writeLCD("Starting ThingSpeak...");
+  writeLCD("Starting ThingSpeak");
   Serial.println("Starting ThingSpeak client");
   ThingSpeak.begin(client); // Start the ThingSpeak connection
   ThingSpeakTimer = getRTCCurrentTime();
@@ -20,12 +20,17 @@ void postToThingSpeak(){
 
 void postDataToThingSpeak(float airTemp, float oilTemp, String flameStatus){
   DateTime now = getRTCCurrentTime();
+  String statusMsg = getRTCCurrentTimeString();
   unsigned long timeSpan = now.unixtime() - ThingSpeakTimer.unixtime();
   if (timeSpan >= thingSpeakPostingInterval) {
     setThingSpeakField(1, airTemp);
     setThingSpeakField(2,oilTemp);
     setThingSpeakField(3,flameStatus);
-    setThingSpeakStatus(flameStatus);
+    if (onFire) statusMsg += " - On Fire";
+    if (airHigh) statusMsg += " - Air Temp High";
+    if (oilHigh) statusMsg += " - Oil Temp High";
+    if (!onFire && !airHigh && !oilHigh) statusMsg += "All Systems Operational";
+    setThingSpeakStatus(statusMsg);
     postToThingSpeak();
     ThingSpeakTimer = now;
   }

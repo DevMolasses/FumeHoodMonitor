@@ -29,7 +29,7 @@ void postDataToThingSpeak(float airTemp, float oilTemp, String flameStatus){
     if (onFire) statusMsg += " - On Fire";
     if (airHigh) statusMsg += " - Air Temp High";
     if (oilHigh) statusMsg += " - Oil Temp High";
-    if (!onFire && !airHigh && !oilHigh) statusMsg += "All Systems Operational";
+    if (!onFire && !airHigh && !oilHigh) statusMsg += " - All Systems Operational";
     setThingSpeakStatus(statusMsg);
     postToThingSpeak();
     ThingSpeakTimer = now;

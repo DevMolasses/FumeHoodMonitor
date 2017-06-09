@@ -32,10 +32,10 @@ void initializeTMP36(){
   }
 }
 
-bool isAirTempHigh(){
-  return readTMP36Temp() > maxTMP36Temperature;
-}
-
-bool isAirTempHigh(float tempF){
-  return tempF > maxTMP36Temperature;
-}
+// bool isAirTempHigh(){
+//   return readTMP36Temp() > maxTMP36Temperature;
+// }
+//
+// bool isAirTempHigh(float tempF){
+//   return tempF > maxTMP36Temperature;
+// }

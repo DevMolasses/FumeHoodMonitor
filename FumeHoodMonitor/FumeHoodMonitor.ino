@@ -5,70 +5,42 @@
 
 // Used to keep track of ThingSpeak posting intervals
 // This should probably change to use the RTC
-DateTime ThingSpeakTimer;
-const unsigned long thingSpeakPostingInterval = 30; // seconds between ThingSpeak posts
+
 
 void setup() {
   // Open serial communications and wait for port to open:
   Serial.begin(115200);
   delay(1000);
+
   // Start Wire for i2c communications
   Serial.println("Starting Wire");
   Wire.begin(); // Start up the i2c
   initializeLCD();
-  writeLCD("Starting Ethernet...");
   initializeEthernetPort();
-  writeLCD("Starting RTC...");
   initializeRTC();
-  writeLCD("Starting NTP...");
   initializeNTPClient();
-  writeLCD("Starting ThingSpeak...");
-  initializeThingSpeak();
-  writeLCD("Starting RTD...");
-  initializeRTD();
-  // initialize7SegmentDisplays();
-  // initializeMP9808();
-  writeLCD("Sync RTC to NTP...");
   updateRTCToNTPTime();
-  writeLCD("Starting TMP36...");
-  initializeTMP36();
-  writeLCD("Starting WatchDog...");
   initializeWatchDog();
-
-  String statusMsg = "Monitor Rebooted at ";
-  writeLCD(statusMsg, getRTCCurrentTimeString());
-
-  statusMsg += getRTCCurrentTimeString();
-  Serial.println("Sending ThingSpeak status: " + statusMsg);
-
-  setThingSpeakStatus(statusMsg);
-  postToThingSpeak();
-
-  ThingSpeakTimer = getRTCCurrentTime();
+  initializeRTD(); // Oil temp
+  initializeDS18B20(); // Digital air temp
+  initializePowerRelay(); // Relay to control hot plate power
+  initializeThingSpeak();
+  String statusMsg = getRTCCurrentTimeString();
+  statusMsg += " - Monitor Rebooted";
+  postThingSpeakStatus(statusMsg);
+  writeLCD("Monitor Rebooted at", getRTCCurrentTimeString());
 }
 
 void loop() {
-  // Collect the data from the sensors and display on LCD
+  // Collect the data from the sensors
   String flameStatus = getFlameStatus();
-  float rtdTemp = readRTDTemp();
-  float TMP36 = readTMP36Temp();
-  writeLCD(getRTCCurrentTimeString(), TMP36, rtdTemp, flameStatus);
+  float oilTemp = readRTDTemp();
+  float airTemp = readDS18B20Temp();
 
+  writeLCD(getRTCCurrentTimeString(), airTemp, oilTemp, flameStatus);
+  setLCDTemperatureColor();
+  postDataToThingSpeak(airTemp, oilTemp, flameStatus);
+  controlHotPlatePowerRelay(airTemp, oilTemp);
+  setLCDTemperatureColor();
   petWatchDog();
-
-  // // Set the display
-  // // displayTemp(temp);
-  // // displayCount(TMP36);
-  //
-  // // Log data to ThingSpeak
-  // DateTime now = getRTCCurrentTime();
-  // unsigned long timeSpan = now.unixtime() - ThingSpeakTimer.unixtime();
-  // if (timeSpan >= thingSpeakPostingInterval) {
-  //   setThingSpeakField(1,temp);
-  //   setThingSpeakField(2,rtdTemp);
-  //   setThingSpeakField(3,flameStatus);
-  //   setThingSpeakStatus(flameStatus);
-  //   postToThingSpeak();
-  //   ThingSpeakTimer = now;
-  // }
 }

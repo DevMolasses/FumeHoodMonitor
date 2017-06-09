@@ -44,8 +44,13 @@ void writeLCD(float ambientTemp, float fluidTemp, String flameStatus){
 }
 
 void writeLCD(String timeString, float ambientTemp, float fluidTemp, String flameStatus){
+  String statusMsg = "Error:";
+  if (onFire) statusMsg += " Fire";
+  if (airHigh) statusMsg += " Air";
+  if (oilHigh) statusMsg += " Oil";
+  if (!onFire && !airHigh && !oilHigh) statusMsg = timeString;
   lcd.setCursor(0,0);
-  lcd.print(make20Characters(timeString));
+  lcd.print(make20Characters(statusMsg));
   lcd.setCursor(0,1);
   lcd.print(make20Characters("Air Temp: " + String(ambientTemp, 2) + String((char)223) + "F"));
   lcd.setCursor(0,2);
@@ -67,7 +72,9 @@ void setLCDTemperatureColor() {
 }
 
 String make20Characters(String str){
-  for (unsigned int i = 0; i < (20 - str.length()); i++) str += " ";
+  while (str.length() < 20) {
+    str += " ";
+  }
   return str;
 }
 

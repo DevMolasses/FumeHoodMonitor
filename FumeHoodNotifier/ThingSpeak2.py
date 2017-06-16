@@ -6,8 +6,44 @@ import time
 import smtplib #library used to send emails
 import Private #stores all sensitive information
 from requests.exceptions import ConnectionError
+import logging
+import logging.handlers
+import os, inspect
 
 ch = thingspeak.Channel(234851, api_key='V9E6SE1V7ZY60S8C')
+LOG_FILENAME = 'ThingSpeak2.out'
+
+def getLogFolderPath():
+    script_filename = inspect.getframeinfo(inspect.currentframe()).filename
+    script_path = '/home/pi/FumeHoodMonitor'
+    directory = os.path.join(script_path, "Eventlogs")
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    return directory
+
+def initLogger():
+    logger = logging.getLogger()
+    if(logger.handlers is None or len(logger.handlers)==0): #don't want to register handlers more than once
+        logger.setLevel(logging.WARNING)
+
+    #create console handler and set level to info
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.WARNING)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logging.warning('stdout logging initialized')
+
+    #create rotating file handler
+    LOG_PATH = os.path.join(getLogFolderPath(), LOG_FILENAME)
+    handler = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes = 1048576, backupCount=4)
+    handler.setLevel(logging.WARNING)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logging.warning('File logging initialized')
+
+    # logging.getLogger('requests').setLevel(logging.ERROR)
 
 def sendEmail(subject, message, severity):
     SMTP_SERVER = 'smtp.gmail.com'
@@ -46,6 +82,10 @@ def getThingSpeakData():
     parsed_results = json.loads(results)
     return parsed_results
 
+def wasRebooted(data):
+    status = data['feeds'][0]['status']
+    return status.find('Rebooted') > -1
+
 def getFireStatus(data):
     status = data['feeds'][0]['status']
     return status.find('Fire') > -1
@@ -82,7 +122,7 @@ def getDataForEmail(data):
     str += "<li>On Fire: %s</li>" % getFireStatus(data)
     str += "<li>Air High: %s</li>" % getAirStatus(data)
     str += "<li>Oil High: %s</li>" % getOilStatus(data)
-    str += "<ul>"
+    str += "</ul>"
     str += "<b>Data:</b>"
     str += "<ul>"
     str += "<li>Air Temp: %s</li>" % data['feeds'][0]['field1']
@@ -105,6 +145,9 @@ airEmailSent = False
 oilEmailSent = False
 timeEmailSent = False
 errorEmailSent = False
+
+initLogger()
+
 while True:
     # Gather the data to act on
     try:
@@ -113,6 +156,8 @@ while True:
         # print 'Handling Connection Error:', err
         time.sleep(2)
     else:
+        if wasRebooted(data):
+            continue
         onFire = getFireStatus(data)
         airHigh = getAirStatus(data)
         oilHigh = getOilStatus(data)
@@ -129,6 +174,7 @@ while True:
             message = assembleEmailMessage(message, data)
             sendEmail(subject, message, severity)
             timeEmailSent = True
+            logging.warning("%s: Time Email Sent" % datetime.utcnow())
             print "Time Email sent at %s" % datetime.utcnow()
         elif elapsedTime <= 300 and timeEmailSent:
             subject = "Clear: Fume Hood Started Reporting"
@@ -136,6 +182,7 @@ while True:
             message = assembleEmailMessage(message, data)
             sendEmail(subject, message, severity)
             timeEmailSent = False
+            logging.warning("%s: Time Email cleared sent" % datetime.utcnow())
             print "Time Email cleared sent at %s" % datetime.utcnow()
 
         # Send an email if there is a fire
@@ -146,6 +193,7 @@ while True:
             sendEmail(subject, message, severity)
             fireEmailSent = True
             errorEmailSent = True
+            logging.warning("%s: Fire Email Sent" % datetime.utcnow())
             print "Fire Email sent at %s" % datetime.utcnow()
         # Send an email when the fire state clears
         elif not(onFire) and fireEmailSent:
@@ -164,6 +212,7 @@ while True:
             sendEmail(subject, message, severity)
             airEmailSent = True
             errorEmailSent = True
+            logging.warning("%s: Air Email Sent" % datetime.utcnow())
             print "Air Email sent at %s" % datetime.utcnow()
         # Send an email when the air high alarm clears
         elif not(airHigh) and airEmailSent:
@@ -182,6 +231,7 @@ while True:
             sendEmail(subject, message, severity)
             oilEmailSent = True
             errorEmailSent = True
+            logging.warning("%s: Oil Email Sent" % datetime.utcnow())
             print "Oil Email sent at %s" % datetime.utcnow()
         # Send an email when the oil high alarm clears
         elif not(oilHigh) and oilEmailSent:
@@ -198,6 +248,7 @@ while True:
             message = assembleEmailMessage(message, data)
             sendEmail(subject, message, severity)
             errorEmailSent = False
+            logging.warning("%s: All clear Email Sent" % datetime.utcnow())
             print "All clear email sent as %s" % datetime.utcnow()
 
         time.sleep(1.5)

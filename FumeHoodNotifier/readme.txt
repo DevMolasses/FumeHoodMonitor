@@ -1,0 +1,16 @@
+The FumeHoodNotifier has 4 custom features running at all times:
+  - It monitors ThingSpeak.com and reports on changing conditions
+    * Python Script: /home/pi/Documents/Python/ThingSpeak2.py
+    * Service: /lib/systemd/system/ThingSpeak2.service
+  - It sends the RPi's IP address to Dweet.io so it is easy to keep up with changing IP addresses
+    * Python Script: /home/pi/Documents/Python/IPDweeter.py
+    * Service: /lib/systemd/system/IPDweeter.service
+  - It uses pin 5 (GPIO 03) to shutdown the pi
+    * Python Script: /home/pi/Documents/Python/PowerButton.py
+    * Service: /lib/systemd/system/PowerButton.service
+    * Simply short pin 5 to GND for 2 seconds to shutdown the pi
+    * To wake, the pi, short the same pins for a brief moment
+  - Pin 11 (GPIO 17) is set to HIGH on boot to power an LED that can be used as a power indicator
+    * This was accomplished by editing the /etc/rc.local file
+      ~ gpio -g mode 17 out
+      ~ gpio -g write 17 1

@@ -7,9 +7,17 @@
 
 import RPi.GPIO as GPIO
 import subprocess
+import time
+
+powerPin = 3
 
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(3, GPIO.IN)
-GPIO.wait_for_edge(3, GPIO.FALLING)
+GPIO.setup(powerPin, GPIO.IN)
 
-subprocess.call(['shutdown', '-h', 'now'], shell=False)
+while True:
+    GPIO.wait_for_edge(powerPin, GPIO.FALLING)
+    buttonPressTime = time.time()
+    while not(GPIO.input(powerPin)):
+        currentTime = time.time()
+        if currentTime - buttonPressTime >= 2:
+            subprocess.call(['shutdown', '-h', 'now'], shell=False)
